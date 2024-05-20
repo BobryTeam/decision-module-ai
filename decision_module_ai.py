@@ -1,4 +1,5 @@
-import threading
+from typing import Dict
+
 from threading import Thread
 
 from events.event import *
@@ -7,55 +8,41 @@ from events.kafka_event import *
 from trend_data.trend_data import TrendData
 from scale_data.scale_data import ScaleData
 
+from microservice.microservice import Microservice
 
 
-class DecisionModuleAI:
+class DecisionModuleAI(Microservice):
     '''
     Класс отвечающий за представление DM AI
     Его задача -- анализировать полученную информацию о тренде от DM Manager'a и возвращать количество реплик скалируемого приложения
     '''
 
-    def __init__(self, dm_manager_event_writer: KafkaEventWriter, event_queue: Queue):
+    def __init__(self, event_queue: Queue, writers: Dict[str, KafkaEventWriter]):
         '''
         Инициализация класса
         '''
 
-        self.event_queue = event_queue
-
-        self.dm_manager_event_writer = dm_manager_event_writer
-
-        self.running = threading.Event()
-        self.running.set()
-
-        self.running_thread = Thread(target=self.run)
-        self.running_thread.start()
-
-    def run(self):
-        '''
-        Принятие событий из очереди 
-        '''
-        while self.running.is_set() or not self.event_queue.empty():
-            if self.event_queue.empty(): continue
-            event_thread = Thread(target=self.handle_event, args=((self.event_queue.get()),))
-            event_thread.start()
+        return super().__init__(event_queue, writers)
 
     def handle_event(self, event: Event):
         '''
         Обработка ивентов, здесь находится основная логика микросервиса
         '''
+        target_function = None
+
         match event.type:
             case EventType.TrendData:
-                self.handle_event_trend_data(event.data)
+                target_function = self.handle_event_trend_data
             case _:
                 pass
+        
+        if target_function is not None:
+            Thread(target=target_function, args=(event.data,)).start()
 
     def handle_event_trend_data(self, trend_data: TrendData):
         # send TrendAnalyseResult to DM Manager
         result = self.analyse_trend_data(trend_data)
-        self.dm_manager_event_writer.send_event(Event(EventType.TrendAnalyseResult, result))
-    
+        self.writers['dmm'].send_event(Event(EventType.TrendAnalyseResult, result))
+
     def analyse_trend_data(self, _trend_data: TrendData):
         return ScaleData(replica_count=2)
-
-    def stop(self):
-        self.running.clear()
