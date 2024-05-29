@@ -4,6 +4,7 @@ from queue import Queue
 from threading import Thread
 
 from event import *
+from kafka_event import *
 from trend_data import TrendData
 from scale_data import ScaleData
 from microservice import Microservice
