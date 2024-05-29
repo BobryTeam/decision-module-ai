@@ -1,14 +1,12 @@
 from typing import Dict
+from queue import Queue
 
 from threading import Thread
 
-from events.event import *
-from events.kafka_event import *
-
-from trend_data.trend_data import TrendData
-from scale_data.scale_data import ScaleData
-
-from microservice.microservice import Microservice
+from events import *
+from trend_data import TrendData
+from scale_data import ScaleData
+from microservice import Microservice
 
 
 class DecisionModuleAI(Microservice):
