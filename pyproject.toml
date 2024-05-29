@@ -1,0 +1,15 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "decision_module_ai"
+version = "2024.26.05"
+readme = "README.md"
+description = ""
+authors = ["John Smith <john@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+events = {git = "https://github.com/BobryTeam/events.git", branch = "feature/pyproject"}
+microservice = {git = "https://github.com/BobryTeam/microservice.git", branch = "feature/pyproject"}

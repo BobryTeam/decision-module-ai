@@ -3,8 +3,8 @@ from queue import Queue
 
 from decision_module_ai import DecisionModuleAI
 
-from events.kafka_event import *
-from events.event import *
+from kafka_event import *
+from event import *
 
 
 # put the values in a k8s manifest

@@ -3,7 +3,7 @@ from queue import Queue
 
 from threading import Thread
 
-from events import *
+from event import *
 from trend_data import TrendData
 from scale_data import ScaleData
 from microservice import Microservice
