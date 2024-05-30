@@ -7,6 +7,10 @@ from events import *
 from trend_data import TrendData
 from scale_data import ScaleData
 from microservice import Microservice
+from dm_ai_model import DecisionModuleModel
+
+import pkg_resources
+
 
 
 class DecisionModuleAI(Microservice):
@@ -19,6 +23,7 @@ class DecisionModuleAI(Microservice):
         '''
         Инициализация класса
         '''
+        self.model = DecisionModuleModel(pkg_resources.resource_filename('dm_ai_model', 'model.joblib'))
 
         return super().__init__(event_queue, writers)
 
@@ -33,7 +38,7 @@ class DecisionModuleAI(Microservice):
                 target_function = self.handle_event_trend_data
             case _:
                 pass
-        
+
         if target_function is not None:
             Thread(target=target_function, args=(event.data,)).start()
 
@@ -42,5 +47,5 @@ class DecisionModuleAI(Microservice):
         result = self.analyse_trend_data(trend_data)
         self.writers['dmm'].send_event(Event(EventType.TrendAnalyseResult, result))
 
-    def analyse_trend_data(self, _trend_data: TrendData):
-        return ScaleData(replica_count=2)
+    def analyse_trend_data(self, trend_data: TrendData):
+        return ScaleData(self.model.analyze(trend_data))
